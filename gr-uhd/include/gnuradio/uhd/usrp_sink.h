@@ -185,6 +185,13 @@ namespace gr {
       virtual void set_iq_balance(const std::complex<double> &correction,
                                   size_t chan = 0) = 0;
 
+      /*!
+       * Indefinitely transmit a waveform specified by the input buffer.
+       *
+       * \param buffer of samples to send
+       */
+      virtual void repeat(std::vector<std::complex<float> > samps) = 0;
+
     };
 
   } /* namespace uhd */

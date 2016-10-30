@@ -585,7 +585,7 @@ namespace gr {
       ::uhd::stream_cmd_t cmd(::uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE);
       cmd.num_samps = nsamps;
       cmd.stream_now = _stream_now;
-      static const double reasonable_delay = 0.1; //order of magnitude over RTT
+      static const double reasonable_delay = 0.01; //aggressive delay
       cmd.time_spec = get_time_now() + ::uhd::time_spec_t(reasonable_delay);
       this->issue_stream_cmd(cmd);
 

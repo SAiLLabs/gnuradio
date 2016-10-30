@@ -97,6 +97,8 @@ namespace gr {
       bool start(void);
       bool stop(void);
 
+      void repeat(std::vector<std::complex<float> > samps);
+
       int work(int noutput_items,
                gr_vector_const_void_star &input_items,
                gr_vector_void_star &output_items);

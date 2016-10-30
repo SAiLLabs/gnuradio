@@ -326,6 +326,51 @@ namespace gr {
 #endif
     }
 
+    void
+    usrp_sink_impl::repeat(std::vector<std::complex<float> > samps)
+    {
+      //ensure streamer exists
+      if(!_tx_stream) {
+        this->start();
+        this->stop();
+      }
+
+      //allocate buffers
+      const size_t spb = _tx_stream->get_max_num_samps();
+      std::vector<std::complex<float> > buff(spb);
+      std::vector<std::complex<float> *> buffs(_stream_args.channels.size(), &buff.front());
+
+      //setup metadata for the first packet
+      _metadata.start_of_burst = true;
+      _metadata.end_of_burst = false;
+      _metadata.has_time_spec = true;
+      _metadata.time_spec = _dev->get_time_now() + ::uhd::time_spec_t(0.1);
+
+      size_t n = 0;
+      while(true) {
+        //fill the buffer with the waveform
+        for(size_t i = 0; i < buff.size(); i++){
+          buff[i] = samps[n];
+          n = (n == samps.size()) - 1 ? n + 1 : 0;
+        }
+
+#ifdef GR_UHD_USE_STREAM_API
+        //send the entire contents of the buffer
+        _tx_stream->send(buffs, buff.size(), _metadata, 1.0);
+#else
+        _dev->get_device()->send(buffs, buff.size(), _metadata,
+          *_type, ::uhd::device::SEND_MODE_FULL_BUFF, 1.0);
+#endif
+
+        _metadata.start_of_burst = false;
+        _metadata.has_time_spec = false;
+      }
+
+      //send a mini EOB packet
+      _metadata.end_of_burst = true;
+      _tx_stream->send("", 0, _metadata);
+    }
+
     /***********************************************************************
      * Work
      **********************************************************************/
